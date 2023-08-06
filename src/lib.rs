@@ -34,28 +34,24 @@ pub fn two_sum_1(input: (Vec<i32>, i32)) -> Vec<i32> {
 
 pub fn group_anagrams_49(strs: Vec<String>) -> Vec<Vec<String>> {
     use std::collections::HashMap;
+    use std::sync::RwLock;
     fn sort_word(s: &String) -> String {
         let mut vec = s.chars().collect::<Vec<_>>();
         vec.sort_unstable();
         vec.iter().collect()
     }
 
-    let mut map: HashMap<String, &mut Vec<String>> = HashMap::new();
-
-    let sorted_strs = strs
-        .iter()
-        .enumerate()
-        .map(|(idx, word)| (idx, word.chars().collect::<Vec<_>>()))
-        .collect::<Vec<_>>();
+    let mut map: HashMap<String, RwLock<Vec<String>>> = HashMap::new();
 
     for word in strs {
         let sorted_word = sort_word(&word);
-        if let Some(mut existing_word) = map.get(&sorted_word) {
-            existing_word.push(word);
+        if let Some(existing_word) = map.get(&sorted_word) {
+            existing_word.write().unwrap()
+            .push(word);
         } else {
             let mut new_vec = vec![];
             new_vec.push(word);
-            map.insert(sorted_word, &mut new_vec);
+            map.insert(sorted_word, RwLock::new(new_vec));
         }
     }
 
@@ -84,6 +80,8 @@ mod tests {
         test_1_two_sum_1, two_sum_1, (vec![2,7,11,15], 9), vec![0, 1];
         test_1_two_sum_2, two_sum_1, (vec![3,2,4], 6), vec![1,2];
         test_1_two_sum_3, two_sum_1, (vec![3,3], 6), vec![0,1];
+
+        /* test_49_group_anagrams_1, */ 
     ];
 
     #[test]
