@@ -58,6 +58,68 @@ pub fn group_anagrams_49(strs: Vec<String>) -> Vec<Vec<String>> {
     todo!()
 }
 
+pub fn hr_simple_array_sum(ar: &[i32]) -> i32 {
+    ar.iter().sum()
+}
+
+pub fn hr_compare_the_triplets(inp: (&[i32], &[i32])) -> Vec<i32> {
+    let (a, b) = inp;
+
+    let mut alice = 0;
+    let mut bob = 0;
+
+    a.iter().zip(b).for_each(|(a, b)| {
+        if a > b {
+            alice += 1;
+        } else if a < b {
+            bob += 1;
+        }
+    });
+
+    vec![alice, bob]
+}
+
+pub fn a_very_big_sum(ar: &[i64]) -> i64 {
+    ar.iter().sum()
+}
+
+pub fn diagonal_difference(arr: &[Vec<i32>]) -> i32 {
+    let length = arr.len();
+
+    let primary_diagonal: i32 = (0..length).map(|i| arr[i][i]).sum();
+    let secondary_diagonal: i32 = (0..length).map(|i| arr[(length-1) - i][i]).sum();
+
+    (primary_diagonal - secondary_diagonal).abs()
+}
+
+pub fn plus_minus(arr: &[i32]) -> bool {
+    let mut positive = 0;
+    let mut negative = 0;
+    let mut zeros = 0;
+
+    for i in arr {
+        if i.is_positive() {
+            positive += 1;
+        } else if i.is_negative() {
+            negative += 1;
+        } else {
+            zeros += 1;
+        }
+    }
+
+    assert_eq!(positive + negative + zeros, arr.len());
+
+    let total = positive + negative + zeros;
+
+    let positive = positive as f64 / total as f64;
+    let negative = negative as f64 / total as f64;
+    let zeros = zeros as f64 / total as f64;
+
+    println!("{:.6}\n{:.6}\n{:.6}", positive, negative, zeros);
+
+    true
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -81,30 +143,36 @@ mod tests {
         test_1_two_sum_2, two_sum_1, (vec![3,2,4], 6), vec![1,2];
         test_1_two_sum_3, two_sum_1, (vec![3,3], 6), vec![0,1];
 
-        /* test_49_group_anagrams_1, */ 
+        /* test_49_group_anagrams_1, */
+
+        test_hr_simple_array_sum_1, hr_simple_array_sum, &[1, 2, 3, 4, 10, 11], 31;
+        test_hr_compare_the_triplets, hr_compare_the_triplets, (&[5, 6, 7], &[3, 6, 10]), vec![1, 1];
+        test_hr_a_very_big_sum, a_very_big_sum, &[1000000001, 1000000002, 1000000003, 1000000004, 1000000005], 5000000015;
+        test_hr_diagonal_difference, diagonal_difference, &[vec![11, 2, 4], vec![4, 5, 6], vec![10, 8, -12]], 15;
+        test_hr_plus_minus, plus_minus, &[-4, 3, -9, 0, 4, 1], true;
     ];
 
-    #[test]
-    pub fn print_map() {
-        let no_of_tests = vec![3, 2, 3].iter().sum();
-        let mut map: HashMap<String, Duration> = MAP.read().unwrap().clone();
-
-        loop {
-            if map.len() != no_of_tests {
-                dbg!(map.len() != no_of_tests, map.len(), no_of_tests);
-                std::thread::sleep(Duration::from_secs(1));
-            } else {
-                break;
-            }
-            map = MAP.read().unwrap().clone();
-        }
-        let mut map = map.iter().collect::<Vec<(&String, &Duration)>>();
-        map.sort_by(|(k1, _), (k2, _)| k1.cmp(k2));
-        let map = map
-            .iter()
-            .map(|(k, v)| format!("{k} => {v:#?}"))
-            .collect::<Vec<String>>();
-        println!("\n\n\n\n\n");
-        dbg!(map);
-    }
+//    #[test]
+//    pub fn print_map() {
+//        let no_of_tests = vec![3, 2, 3].iter().sum();
+//        let mut map: HashMap<String, Duration> = MAP.read().unwrap().clone();
+//
+//        loop {
+//            if map.len() != no_of_tests {
+//                dbg!(map.len() != no_of_tests, map.len(), no_of_tests);
+//                std::thread::sleep(Duration::from_secs(1));
+//            } else {
+//                break;
+//            }
+//            map = MAP.read().unwrap().clone();
+//        }
+//        let mut map = map.iter().collect::<Vec<(&String, &Duration)>>();
+//        map.sort_by(|(k1, _), (k2, _)| k1.cmp(k2));
+//        let map = map
+//            .iter()
+//            .map(|(k, v)| format!("{k} => {v:#?}"))
+//            .collect::<Vec<String>>();
+//        println!("\n\n\n\n\n");
+//        dbg!(map);
+//    }
 }
