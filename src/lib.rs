@@ -46,8 +46,7 @@ pub fn group_anagrams_49(strs: Vec<String>) -> Vec<Vec<String>> {
     for word in strs {
         let sorted_word = sort_word(&word);
         if let Some(existing_word) = map.get(&sorted_word) {
-            existing_word.write().unwrap()
-            .push(word);
+            existing_word.write().unwrap().push(word);
         } else {
             let mut new_vec = vec![];
             new_vec.push(word);
@@ -87,7 +86,7 @@ pub fn diagonal_difference(arr: &[Vec<i32>]) -> i32 {
     let length = arr.len();
 
     let primary_diagonal: i32 = (0..length).map(|i| arr[i][i]).sum();
-    let secondary_diagonal: i32 = (0..length).map(|i| arr[(length-1) - i][i]).sum();
+    let secondary_diagonal: i32 = (0..length).map(|i| arr[(length - 1) - i][i]).sum();
 
     (primary_diagonal - secondary_diagonal).abs()
 }
@@ -120,6 +119,96 @@ pub fn plus_minus(arr: &[i32]) -> bool {
     true
 }
 
+pub fn wheresmyinternet(input: String) -> String {
+    let (mut lines, _) = time_it!("splitting input into lines" => input.split('\n'));
+    let (first, rest) = (
+        lines.next().unwrap().to_owned(),
+        lines,
+    );
+
+    let (no_houses, _) = first.split_once(' ').unwrap();
+    let no_houses = no_houses.parse::<usize>().unwrap();
+
+    use std::collections::{HashMap, HashSet};
+
+    let (rest, _) = time_it!("converting the pairs into numbers" => rest
+        .map(|s| s.split_once(' ').unwrap())
+        .map(|(a, b)| (a.parse::<usize>().unwrap(), b.parse::<usize>().unwrap())));
+
+    let mut map: HashMap<usize, HashSet<usize>> = HashMap::new();
+
+    fn connect(map: &mut HashMap<usize, HashSet<usize>>, a: usize, b: usize) {
+        map.entry(a)
+            .and_modify(|v| {
+                v.insert(b);
+            })
+            .or_insert({
+                let mut set = HashSet::new();
+                set.insert(b);
+                set
+            });
+        map.entry(b)
+            .and_modify(|v| {
+                v.insert(a);
+            })
+            .or_insert({
+                let mut set = HashSet::new();
+                set.insert(a);
+                set
+            });
+    }
+
+    time_it!("adding connections to the hashmap" => {
+        connect(&mut map, 1, 1);
+        for (a, b) in rest {
+            connect(&mut map, a, b);
+        }
+    });
+
+    let mut flags = vec![false; no_houses];
+
+    fn descent(
+        map: &HashMap<usize, HashSet<usize>>,
+        ele: &usize,
+        max: usize,
+        flags: &mut Vec<bool>,
+    ) {
+        if max <= 0 || flags[ele - 1] {
+            return;
+        }
+        let cons = match map.get(ele) {
+            Some(x) => x,
+            None => {
+                return;
+            }
+        };
+        flags[ele - 1] = true;
+        for ele in cons {
+            descent(map, ele, max - 1, flags);
+        }
+    }
+
+    time_it!("main descent function" => descent(&map, &1, no_houses, &mut flags));
+
+    let (unvisited, _) = time_it!("converting the flags to node numbers" => flags
+        .iter()
+        .enumerate()
+        .filter(|(_idx, flag)| !**flag)
+        .map(|(idx, _flag)| idx + 1)
+        .collect::<Vec<_>>());
+
+    if unvisited.is_empty() {
+        "Connected".to_string()
+    } else {
+        unvisited
+            .iter()
+            .map(|x| format!("{}\n", x))
+            .collect::<String>()
+            .trim()
+            .to_string()
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -150,29 +239,33 @@ mod tests {
         test_hr_a_very_big_sum, a_very_big_sum, &[1000000001, 1000000002, 1000000003, 1000000004, 1000000005], 5000000015;
         test_hr_diagonal_difference, diagonal_difference, &[vec![11, 2, 4], vec![4, 5, 6], vec![10, 8, -12]], 15;
         test_hr_plus_minus, plus_minus, &[-4, 3, -9, 0, 4, 1], true;
+
+        test_kattis_wheresmyinternet_1, wheresmyinternet, "2 1\n2 1".to_string(), "Connected".to_string();
+        test_kattis_wheresmyinternet_2, wheresmyinternet, "6 4\n1 2\n2 3\n3 4\n5 6".to_string(), "5\n6".to_string();
+        test_kattis_wheresmyinternet_3, wheresmyinternet, "4 3\n2 3\n4 2\n3 4".to_string(), "2\n3\n4".to_string();
     ];
 
-//    #[test]
-//    pub fn print_map() {
-//        let no_of_tests = vec![3, 2, 3].iter().sum();
-//        let mut map: HashMap<String, Duration> = MAP.read().unwrap().clone();
-//
-//        loop {
-//            if map.len() != no_of_tests {
-//                dbg!(map.len() != no_of_tests, map.len(), no_of_tests);
-//                std::thread::sleep(Duration::from_secs(1));
-//            } else {
-//                break;
-//            }
-//            map = MAP.read().unwrap().clone();
-//        }
-//        let mut map = map.iter().collect::<Vec<(&String, &Duration)>>();
-//        map.sort_by(|(k1, _), (k2, _)| k1.cmp(k2));
-//        let map = map
-//            .iter()
-//            .map(|(k, v)| format!("{k} => {v:#?}"))
-//            .collect::<Vec<String>>();
-//        println!("\n\n\n\n\n");
-//        dbg!(map);
-//    }
+    //    #[test]
+    //    pub fn print_map() {
+    //        let no_of_tests = vec![3, 2, 3].iter().sum();
+    //        let mut map: HashMap<String, Duration> = MAP.read().unwrap().clone();
+    //
+    //        loop {
+    //            if map.len() != no_of_tests {
+    //                dbg!(map.len() != no_of_tests, map.len(), no_of_tests);
+    //                std::thread::sleep(Duration::from_secs(1));
+    //            } else {
+    //                break;
+    //            }
+    //            map = MAP.read().unwrap().clone();
+    //        }
+    //        let mut map = map.iter().collect::<Vec<(&String, &Duration)>>();
+    //        map.sort_by(|(k1, _), (k2, _)| k1.cmp(k2));
+    //        let map = map
+    //            .iter()
+    //            .map(|(k, v)| format!("{k} => {v:#?}"))
+    //            .collect::<Vec<String>>();
+    //        println!("\n\n\n\n\n");
+    //        dbg!(map);
+    //    }
 }
