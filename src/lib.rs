@@ -192,7 +192,7 @@ pub fn wheresmyinternet(input: String) -> String {
         .map(|(idx, _flag)| idx + 1)
         .collect::<Vec<_>>();
 
-    let output = if unvisited.is_empty() {
+    if unvisited.is_empty() {
         "Connected".to_string()
     } else {
         unvisited
@@ -201,9 +201,7 @@ pub fn wheresmyinternet(input: String) -> String {
             .collect::<String>()
             .trim()
             .to_string()
-    };
-
-    output
+    }
 }
 
 #[cfg(test)]
