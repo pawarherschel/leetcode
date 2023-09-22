@@ -120,20 +120,17 @@ pub fn plus_minus(arr: &[i32]) -> bool {
 }
 
 pub fn wheresmyinternet(input: String) -> String {
-    let (mut lines, _) = time_it!("splitting input into lines" => input.split('\n'));
-    let (first, rest) = (
-        lines.next().unwrap().to_owned(),
-        lines,
-    );
+    let mut lines = input.split('\n');
+    let (first, rest) = (lines.next().unwrap().to_owned(), lines);
 
     let (no_houses, _) = first.split_once(' ').unwrap();
     let no_houses = no_houses.parse::<usize>().unwrap();
 
     use std::collections::{HashMap, HashSet};
 
-    let (rest, _) = time_it!("converting the pairs into numbers" => rest
+    let rest = rest
         .map(|s| s.split_once(' ').unwrap())
-        .map(|(a, b)| (a.parse::<usize>().unwrap(), b.parse::<usize>().unwrap())));
+        .map(|(a, b)| (a.parse::<usize>().unwrap(), b.parse::<usize>().unwrap()));
 
     let mut map: HashMap<usize, HashSet<usize>> = HashMap::new();
 
@@ -158,46 +155,44 @@ pub fn wheresmyinternet(input: String) -> String {
             });
     }
 
-    time_it!("adding connections to the hashmap" => {
-        connect(&mut map, 1, 1);
-        for (a, b) in rest {
-            connect(&mut map, a, b);
-        }
-    });
+    connect(&mut map, 1, 1);
+    for (a, b) in rest {
+        connect(&mut map, a, b);
+    }
 
     let mut flags = vec![false; no_houses];
 
     fn descent(
         map: &HashMap<usize, HashSet<usize>>,
-        ele: &usize,
+        ele: usize,
         max: usize,
         flags: &mut Vec<bool>,
     ) {
         if max <= 0 || flags[ele - 1] {
             return;
         }
-        let cons = match map.get(ele) {
-            Some(x) => x,
-            None => {
-                return;
-            }
-        };
+
         flags[ele - 1] = true;
-        for ele in cons {
-            descent(map, ele, max - 1, flags);
+        let binding = HashSet::new();
+        let cons = map.get(&ele).unwrap_or(&binding); // Use unwrap_or to handle None
+
+        for &neighbor in cons {
+            if !flags[neighbor - 1] {
+                descent(map, neighbor, max - 1, flags);
+            }
         }
     }
 
-    time_it!("main descent function" => descent(&map, &1, no_houses, &mut flags));
+    descent(&map, 1, no_houses, &mut flags);
 
-    let (unvisited, _) = time_it!("converting the flags to node numbers" => flags
+    let unvisited = flags
         .iter()
         .enumerate()
         .filter(|(_idx, flag)| !**flag)
         .map(|(idx, _flag)| idx + 1)
-        .collect::<Vec<_>>());
+        .collect::<Vec<_>>();
 
-    if unvisited.is_empty() {
+    let output = if unvisited.is_empty() {
         "Connected".to_string()
     } else {
         unvisited
@@ -206,7 +201,9 @@ pub fn wheresmyinternet(input: String) -> String {
             .collect::<String>()
             .trim()
             .to_string()
-    }
+    };
+
+    output
 }
 
 #[cfg(test)]
