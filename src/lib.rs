@@ -2,6 +2,7 @@ mod zaphkiel;
 
 use cargo_leet::*;
 use std::cell::RefCell;
+use std::collections::BTreeMap;
 use std::rc::Rc;
 
 pub fn contains_duplicate_217(nums: Vec<i32>) -> bool {
@@ -366,6 +367,47 @@ pub fn halves_are_alike_1704(s: String) -> bool {
             .count()
 }
 
+pub fn find_winners_2225(matches: Vec<Vec<i32>>) -> Vec<Vec<i32>> {
+    let mut loses: BTreeMap<i32, i32> = BTreeMap::new();
+
+    for r#match in matches {
+        let [winner, loser, ..] = r#match[..] else {
+            unreachable!()
+        };
+
+        loses
+            .entry(loser)
+            .and_modify(|it| *it = *it + 1)
+            .or_insert(1);
+
+        loses.entry(winner).or_insert(0);
+    }
+
+    // let mut never_lost = vec![];
+    // let mut lost_once = vec![];
+
+    // for (player, number_of_loses) in loses {
+    //     match number_of_loses {
+    //         0 => never_lost.push(player),
+    //         1 => lost_once.push(player),
+    //         _ => (),
+    //     }
+    // }
+
+    let never_lost = loses
+        .iter()
+        .filter(|(_, it)| **it == 0)
+        .map(|(it, _)| *it)
+        .collect();
+    let lost_once = loses
+        .iter()
+        .filter(|(_, it)| **it == 1)
+        .map(|(it, _)| *it)
+        .collect();
+
+    vec![never_lost, lost_once]
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -378,41 +420,44 @@ mod tests {
     }
 
     generate_tests! {MAP;
-        test_217_contains_duplicate_1, contains_duplicate_217, vec![1,2,3,1], true;
-        test_217_contains_duplicate_2, contains_duplicate_217, vec![1,2,3,4], false;
-        test_217_contains_duplicate_3, contains_duplicate_217, vec![1,1,1,3,3,4,3,2,4,2], true;
+            test_217_contains_duplicate_1, contains_duplicate_217, vec![1,2,3,1], true;
+            test_217_contains_duplicate_2, contains_duplicate_217, vec![1,2,3,4], false;
+            test_217_contains_duplicate_3, contains_duplicate_217, vec![1,1,1,3,3,4,3,2,4,2], true;
 
-        test_242_valid_anagram_1, valid_anagram_242, ("anagram".into(), "nagaram".into()), true;
-        test_242_valid_anagram_2, valid_anagram_242, ("rat".into(), "car".into()), false;
+            test_242_valid_anagram_1, valid_anagram_242, ("anagram".into(), "nagaram".into()), true;
+            test_242_valid_anagram_2, valid_anagram_242, ("rat".into(), "car".into()), false;
 
-        test_1_two_sum_1, two_sum_1, (vec![2,7,11,15], 9), vec![0, 1];
-        test_1_two_sum_2, two_sum_1, (vec![3,2,4], 6), vec![1,2];
-        test_1_two_sum_3, two_sum_1, (vec![3,3], 6), vec![0,1];
+            test_1_two_sum_1, two_sum_1, (vec![2,7,11,15], 9), vec![0, 1];
+            test_1_two_sum_2, two_sum_1, (vec![3,2,4], 6), vec![1,2];
+            test_1_two_sum_3, two_sum_1, (vec![3,3], 6), vec![0,1];
 
-        /* test_49_group_anagrams_1, */
+            /* test_49_group_anagrams_1, */
 
-        test_hr_simple_array_sum_1, hr_simple_array_sum, &[1, 2, 3, 4, 10, 11], 31;
-        test_hr_compare_the_triplets, hr_compare_the_triplets, (&[5, 6, 7], &[3, 6, 10]), vec![1, 1];
-        test_hr_a_very_big_sum, a_very_big_sum, &[1000000001, 1000000002, 1000000003, 1000000004, 1000000005], 5000000015;
-        test_hr_diagonal_difference, diagonal_difference, &[vec![11, 2, 4], vec![4, 5, 6], vec![10, 8, -12]], 15;
-        test_hr_plus_minus, plus_minus, &[-4, 3, -9, 0, 4, 1], true;
+            test_hr_simple_array_sum_1, hr_simple_array_sum, &[1, 2, 3, 4, 10, 11], 31;
+            test_hr_compare_the_triplets, hr_compare_the_triplets, (&[5, 6, 7], &[3, 6, 10]), vec![1, 1];
+            test_hr_a_very_big_sum, a_very_big_sum, &[1000000001, 1000000002, 1000000003, 1000000004, 1000000005], 5000000015;
+            test_hr_diagonal_difference, diagonal_difference, &[vec![11, 2, 4], vec![4, 5, 6], vec![10, 8, -12]], 15;
+            test_hr_plus_minus, plus_minus, &[-4, 3, -9, 0, 4, 1], true;
 
-        test_kattis_wheresmyinternet_1, wheresmyinternet, "2 1\n2 1".to_string(), "Connected".to_string();
-        test_kattis_wheresmyinternet_2, wheresmyinternet, "6 4\n1 2\n2 3\n3 4\n5 6".to_string(), "5\n6".to_string();
-        test_kattis_wheresmyinternet_3, wheresmyinternet, "4 3\n2 3\n4 2\n3 4".to_string(), "2\n3\n4".to_string();
+            test_kattis_wheresmyinternet_1, wheresmyinternet, "2 1\n2 1".to_string(), "Connected".to_string();
+            test_kattis_wheresmyinternet_2, wheresmyinternet, "6 4\n1 2\n2 3\n3 4\n5 6".to_string(), "5\n6".to_string();
+            test_kattis_wheresmyinternet_3, wheresmyinternet, "4 3\n2 3\n4 2\n3 4".to_string(), "2\n3\n4".to_string();
 
-        // test_2385_amount_of_time_for_binary_tree_to_be_infected_1, amount_of_time_2385, (TreeRoot::from("[1,5,3,null,4,10,6,9,2]").into(), 3), 4;
-        // test_2385_amount_of_time_for_binary_tree_to_be_infected_2, amount_of_time_2385, (TreeRoot::from("[1,2,null,3,null,4,null,5]").into(), 2), 3;
-        // test_2385_amount_of_time_for_binary_tree_to_be_infected_3, amount_of_time_2385, (TreeRoot::from("[1]").into(), 0), 0;
-        // test_2385_amount_of_time_for_binary_tree_to_be_infected_4, amount_of_time_2385, (TreeRoot::from("[1,2,null,3,null,4,null,5]").into(), 4), 3;
-        // test_2385_amount_of_time_for_binary_tree_to_be_infected_5, amount_of_time_2385, (TreeRoot::from("[5,2,3,4,null,null,null,1]").into(), 4), 3;
-        // test_2385_amount_of_time_for_binary_tree_to_be_infected_6, amount_of_time_2385, (TreeRoot::from("[1,null,2,3,4,null,5]").into(), 4), 3;
+            // test_2385_amount_of_time_for_binary_tree_to_be_infected_1, amount_of_time_2385, (TreeRoot::from("[1,5,3,null,4,10,6,9,2]").into(), 3), 4;
+            // test_2385_amount_of_time_for_binary_tree_to_be_infected_2, amount_of_time_2385, (TreeRoot::from("[1,2,null,3,null,4,null,5]").into(), 2), 3;
+            // test_2385_amount_of_time_for_binary_tree_to_be_infected_3, amount_of_time_2385, (TreeRoot::from("[1]").into(), 0), 0;
+            // test_2385_amount_of_time_for_binary_tree_to_be_infected_4, amount_of_time_2385, (TreeRoot::from("[1,2,null,3,null,4,null,5]").into(), 4), 3;
+            // test_2385_amount_of_time_for_binary_tree_to_be_infected_5, amount_of_time_2385, (TreeRoot::from("[5,2,3,4,null,null,null,1]").into(), 4), 3;
+            // test_2385_amount_of_time_for_binary_tree_to_be_infected_6, amount_of_time_2385, (TreeRoot::from("[1,null,2,3,4,null,5]").into(), 4), 3;
 
-        test_1026_maximum_difference_between_node_and_ancestor_1, max_ancestor_diff_1026, TreeRoot::from("[8,3,10,1,6,null,14,null,null,4,7,13]").into(), 7;
+            test_1026_maximum_difference_between_node_and_ancestor_1, max_ancestor_diff_1026, TreeRoot::from("[8,3,10,1,6,null,14,null,null,4,7,13]").into(), 7;
 
-        test_1704_determine_if_string_halves_are_alike_1, halves_are_alike_1704, "book".into(), true;
+            test_1704_determine_if_string_halves_are_alike_1, halves_are_alike_1704, "book".into(), true;
 
-    }
+            test_2225_find_players_with_zero_or_one_losses_1, find_winners_2225,
+    vec![vec![1,3],vec![2,3],vec![3,6],vec![5,6],vec![5,7],vec![4,5],vec![4,8],vec![4,9],vec![10,4],vec![10,9]],
+    vec![vec![1,2,10],vec![4,5,7,8]];
+                        }
 
     // #[test]
     // pub fn print_map() {
